@@ -1,4 +1,4 @@
-seed = 1000 # TODO: replace this with the random seed of your team!
+seed = 22
 
 # Note that this should be the general syntax and serves as a guidance,
 # errors might appear because of the versions that these packages use
