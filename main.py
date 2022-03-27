@@ -95,8 +95,8 @@ if __name__ == "__main__":
     # print(training_sequences.shape)
     # print(testing_label.shape)
     # print(testing_sequences.shape)
-    history = model.fit(training_sequences, training_label, epochs=100,
-                        validation_data=(testing_sequences, testing_label), verbose=5)
+    history = model.fit(training_sequences, training_label, epochs=10,
+                        validation_data=(testing_sequences, testing_label), verbose=2)
 
     fisierTest = open("test.json")
     dataTest = json.load(fisierTest)
@@ -120,9 +120,8 @@ if __name__ == "__main__":
         row = []
         total = np.sum(i)
         row.append(str(len(finalList)))
-        row.extend(str((i/total).tolist().index(np.max(i/total))))
+        row.append(str((i/total).tolist().index(np.max(i/total))))
         finalList.append(row)
-    print(finalList)
     with open('myfile.csv', 'w', newline='') as outfile:
         write = csv.writer(outfile)
         write.writerow(['Id', 'ner_label'])
