@@ -62,10 +62,12 @@ if __name__ == "__main__":
     # testing_label = pad_sequences(testing_label, maxlen=16, padding='post', truncating='post')
     # print("sunt la model")
     model = tf.keras.Sequential([
-        tf.keras.layers.Embedding(30000, 16, input_length=32),
+        tf.keras.layers.Embedding(300000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
         tf.keras.layers.Dense(256, activation='swish'),
         tf.keras.layers.Dense(128, activation='softsign'),
+        tf.keras.layers.Dense(64, activation='selu'),
+        tf.keras.layers.Dense(32, activation='softmax'),
         tf.keras.layers.Dense(16, activation='softplus')
     ])
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -83,8 +85,8 @@ if __name__ == "__main__":
     # print(testing_label.shape)
     # print(testing_sequences.shape)
     # print("sunt la history")
-    history = model.fit(training_sequences, training_label, epochs=10,
-                        validation_data=(testing_sequences, testing_label), verbose=2)
+    history = model.fit(training_sequences, training_label, epochs=5,
+                        validation_data=(testing_sequences, testing_label), verbose=1)
 
     plot_graphs(history, "accuracy")
     plot_graphs(history, "loss")
