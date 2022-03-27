@@ -64,8 +64,8 @@ if __name__ == "__main__":
     model = tf.keras.Sequential([
         tf.keras.layers.Embedding(30000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(50, activation='exponential'),
-        tf.keras.layers.Dense(20, activation='relu'),
+        tf.keras.layers.Dense(256, activation='swish'),
+        tf.keras.layers.Dense(128, activation='softsign'),
         tf.keras.layers.Dense(16, activation='softplus')
     ])
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -83,8 +83,11 @@ if __name__ == "__main__":
     # print(testing_label.shape)
     # print(testing_sequences.shape)
     # print("sunt la history")
-    history = model.fit(training_sequences, training_label, epochs=100,
+    history = model.fit(training_sequences, training_label, epochs=10,
                         validation_data=(testing_sequences, testing_label), verbose=2)
+
+    plot_graphs(history, "accuracy")
+    plot_graphs(history, "loss")
 
     fisierTest = open("test.json")
     dataTest = json.load(fisierTest)
@@ -95,7 +98,7 @@ if __name__ == "__main__":
             space_after2.append(j)
         for j in i['tokens']:
             tokens2.append(j)
-    print(len(tokens2))
+    # print(len(tokens2))
     testFinal_sequences = tokenizer.texts_to_sequences(tokens2)
     testFinal_sequences = pad_sequences(testFinal_sequences, maxlen=32, padding='post', truncating='post')
     output = model.predict(testFinal_sequences)
@@ -103,9 +106,9 @@ if __name__ == "__main__":
     finalList = []
     for i in output:
         row = []
-        total = np.sum(i)
+        total = np.sum(np.power(np.ones(shape=np.array(i).shape) * np.e, i))
         row.append(str(len(finalList)))
-        row.append(str((i/total).tolist().index(np.max(i/total))))
+        row.append(str((np.power(np.ones(shape=np.array(i).shape) * np.e, i)/total).tolist().index(np.max(np.power(np.ones(shape=np.array(i).shape) * np.e, i)/total))))
         finalList.append(row)
     with open('DragoonPredictions.csv', 'w', newline='') as outfile:
         write = csv.writer(outfile)
@@ -113,5 +116,3 @@ if __name__ == "__main__":
         write.writerows(finalList)
     # with open("sample.json", "w") as outfile:
     #     json.dump(y, outfile)
-    # plot_graphs(history, "accuracy")
-    # plot_graphs(history, "loss")
