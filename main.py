@@ -64,9 +64,9 @@ if __name__ == "__main__":
     model = tf.keras.Sequential([
         tf.keras.layers.Embedding(30000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(64, activation='exponential'),
-        tf.keras.layers.Dense(32, activation='softplus'),
-        tf.keras.layers.Dense(16, activation='relu')
+        tf.keras.layers.Dense(50, activation='exponential'),
+        tf.keras.layers.Dense(20, activation='relu'),
+        tf.keras.layers.Dense(16, activation='softplus')
     ])
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     # print(training_sequences)
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     # print(testing_label.shape)
     # print(testing_sequences.shape)
     # print("sunt la history")
-    history = model.fit(training_sequences, training_label, epochs=0,
-                        validation_data=(testing_sequences, testing_label), verbose=1)
+    history = model.fit(training_sequences, training_label, epochs=100,
+                        validation_data=(testing_sequences, testing_label), verbose=2)
 
     fisierTest = open("test.json")
     dataTest = json.load(fisierTest)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         row = []
         total = np.sum(i)
         row.append(str(len(finalList)))
-        row.append('0')
+        row.append(str((i/total).tolist().index(np.max(i/total))))
         finalList.append(row)
     with open('DragoonPredictions.csv', 'w', newline='') as outfile:
         write = csv.writer(outfile)
