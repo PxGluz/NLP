@@ -63,9 +63,9 @@ if __name__ == "__main__":
     model = tf.keras.Sequential([
         tf.keras.layers.Embedding(30000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(256, activation='relu'),
-        tf.keras.layers.Dense(30, activation='relu'),
-        tf.keras.layers.Dense(16, activation='linear')
+        tf.keras.layers.Dense(128, activation='sigmoid'),
+        tf.keras.layers.Dense(32, activation='elu'),
+        tf.keras.layers.Dense(16, activation='swish')
     ])
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     # print(training_sequences)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # print(testing_label.shape)
     # print(testing_sequences.shape)
     # print("sunt la history")
-    history = model.fit(training_sequences, training_label, epochs=50,
+    history = model.fit(training_sequences, training_label, epochs=15,
                         validation_data=(testing_sequences, testing_label), verbose=2)
 
     fisierTest = open("test.json")
