@@ -1,7 +1,8 @@
 import json
 import csv
+import math
+
 import tensorflow as tf
-import torch
 import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     # print(tokens)
     # print(ner_ids)
     # print(np.size(tokens))
-    split = int(len(tokens) * 0.95)
+    split = int(len(tokens) * 0.85)
     training_sample = tokens[:split]
     training_label = ner_ids[:split]
     testing_sample = tokens[split:]
@@ -63,16 +64,16 @@ if __name__ == "__main__":
     model = tf.keras.Sequential([
         tf.keras.layers.Embedding(30000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(128, activation='sigmoid'),
-        tf.keras.layers.Dense(32, activation='elu'),
-        tf.keras.layers.Dense(16, activation='swish')
+        tf.keras.layers.Dense(64, activation='exponential'),
+        tf.keras.layers.Dense(32, activation='softplus'),
+        tf.keras.layers.Dense(16, activation='relu')
     ])
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     # print(training_sequences)
     # print(training_label)
     # print("sunt la convertiri")
     training_sequences = np.array(training_sequences, dtype=np.float64)
-    training_label = np.array(training_label, dtype=np.float64, like= training_sequences)
+    training_label = np.array(training_label, dtype=np.float64, like=training_sequences)
     testing_sequences = np.array(testing_sequences, dtype=np.float64)
     testing_label = np.array(testing_label, dtype=np.float64, like=testing_sequences)
     # training_label = np.asarray(training_label).astype('float64').reshape((300, 1))
@@ -82,8 +83,8 @@ if __name__ == "__main__":
     # print(testing_label.shape)
     # print(testing_sequences.shape)
     # print("sunt la history")
-    history = model.fit(training_sequences, training_label, epochs=15,
-                        validation_data=(testing_sequences, testing_label), verbose=2)
+    history = model.fit(training_sequences, training_label, epochs=0,
+                        validation_data=(testing_sequences, testing_label), verbose=1)
 
     fisierTest = open("test.json")
     dataTest = json.load(fisierTest)
@@ -104,7 +105,7 @@ if __name__ == "__main__":
         row = []
         total = np.sum(i)
         row.append(str(len(finalList)))
-        row.append(str((i/total).tolist().index(np.max(i/total))))
+        row.append('0')
         finalList.append(row)
     with open('DragoonPredictions.csv', 'w', newline='') as outfile:
         write = csv.writer(outfile)
