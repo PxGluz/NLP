@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # print(training_sequences.shape)
     # print(testing_label.shape)
     # print(testing_sequences.shape)
-    history = model.fit(training_sequences, training_label, epochs=10,
+    history = model.fit(training_sequences, training_label, epochs=50,
                         validation_data=(testing_sequences, testing_label), verbose=2)
 
     fisierTest = open("test.json")
