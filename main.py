@@ -22,59 +22,46 @@ if __name__ == "__main__":
     ner_ids = []
     tokens = []
     space_after = []
-    X = []
-    Y = []
-    spaces = []
-    YNume = []
     fisier = open("train.json")
     data = json.load(fisier)
     for i in data:
-        deIgnorat = []
         for j in i['space_after']:
             space_after.append(j)
         for j in i['ner_tags']:
             ner_tags.append(j)
         for j in i['tokens']:
-            if ",.;()[]{}\\\"\'+=/-".find(j) == -1:
-                tokens.append(j)
-                deIgnorat.append(False)
-            else:
-                deIgnorat.append(True)
-        k = 0
+            tokens.append(j)
         for j in i['ner_ids']:
-            if not deIgnorat[k]:
-                ner_ids.append(j)
-            k += 1
-        X.append(tokens)
-        Y.append(ner_ids)
-        spaces.append(space_after)
-        YNume.append(ner_tags)
-        #
-        ner_tags = []
-        ner_ids = []
-        tokens = []
-        space_after = []
+            ner_ids.append(str(j))
     # print(np.size(X))
     # print(np.size(Y))
-    # print(X)
-    # print(Y)
-    split = int(len(X) * 0.95)
-    training_sample = X[:split]
-    training_label = Y[:split]
-    testing_sample = X[split:]
-    testing_label = Y[split:]
-    tokenizer = Tokenizer(num_words=30000, oov_token="0")
+    # print(tokens)
+    # print(ner_ids)
+    # print(np.size(tokens))
+    split = int(len(tokens) * 0.95)
+    training_sample = tokens[:split]
+    training_label = ner_ids[:split]
+    testing_sample = tokens[split:]
+    testing_label = ner_ids[split:]
+    tokenizer = Tokenizer(num_words=100000, oov_token="0", char_level=True)
     tokenizer.fit_on_texts(training_sample)
     word_index = tokenizer.word_index
+    # print(np.size(word_index))
     training_sequences = tokenizer.texts_to_sequences(training_sample)
-    training_sequences = pad_sequences(training_sequences, maxlen=100, padding='post', truncating='post')
+    training_sequences = pad_sequences(training_sequences, maxlen=32, padding='post', truncating='post')
+    # print(type(training_sequences[0]))
     testing_sequences = tokenizer.texts_to_sequences(testing_sample)
-    testing_sequences = pad_sequences(testing_sequences, maxlen=100, padding='post', truncating='post')
-    training_label = pad_sequences(training_label, maxlen=16, padding='post', truncating='post')
-    testing_label = pad_sequences(testing_label, maxlen=16, padding='post', truncating='post')
-
+    testing_sequences = pad_sequences(testing_sequences, maxlen=32, padding='post', truncating='post')
+    # labelTokenizer = Tokenizer(num_words=100000, oov_token="0", char_level=True)
+    # tokenizer.fit_on_texts(training_label)
+    # word_index2 = labelTokenizer.word_index
+    # training_labelS = labelTokenizer.texts_to_sequences(training_label)
+    # training_label = pad_sequences(training_label, maxlen=16, padding='post', truncating='post')
+    # testing_labelS = labelTokenizer.texts_to_sequences(testing_label)
+    # testing_label = pad_sequences(testing_label, maxlen=16, padding='post', truncating='post')
+    # print("sunt la model")
     model = tf.keras.Sequential([
-        tf.keras.layers.Embedding(30000, 16, input_length=100),
+        tf.keras.layers.Embedding(30000, 16, input_length=32),
         tf.keras.layers.GlobalAveragePooling1D(),
         tf.keras.layers.Dense(256, activation='relu'),
         tf.keras.layers.Dense(30, activation='relu'),
@@ -83,36 +70,33 @@ if __name__ == "__main__":
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     # print(training_sequences)
     # print(training_label)
-    # print(len(training_sequences))
-    # print(len(training_label))
+    # print("sunt la convertiri")
     training_sequences = np.array(training_sequences, dtype=np.float64)
-    training_label = np.array(training_label, dtype=np.float64)
+    training_label = np.array(training_label, dtype=np.float64, like= training_sequences)
     testing_sequences = np.array(testing_sequences, dtype=np.float64)
-    testing_label = np.array(testing_label, dtype=np.float64)
+    testing_label = np.array(testing_label, dtype=np.float64, like=testing_sequences)
     # training_label = np.asarray(training_label).astype('float64').reshape((300, 1))
     # testing_label = np.asarray(testing_label).astype('float64').reshape((300, 1))
     # print(training_label.shape)
     # print(training_sequences.shape)
     # print(testing_label.shape)
     # print(testing_sequences.shape)
+    # print("sunt la history")
     history = model.fit(training_sequences, training_label, epochs=50,
                         validation_data=(testing_sequences, testing_label), verbose=2)
 
     fisierTest = open("test.json")
     dataTest = json.load(fisierTest)
+    space_after2 = []
+    tokens2 = []
     for i in dataTest:
         for j in i['space_after']:
-            space_after.append(j)
+            space_after2.append(j)
         for j in i['tokens']:
-            if ",.;()[]{}\\\"\'+=/-".find(j) == -1:
-                tokens.append(j)
-        X.append(tokens)
-        spaces.append(space_after)
-        #
-        tokens = []
-        space_after = []
-    testFinal_sequences = tokenizer.texts_to_sequences(X)
-    testFinal_sequences = pad_sequences(testFinal_sequences, maxlen=100, padding='post', truncating='post')
+            tokens2.append(j)
+    print(len(tokens2))
+    testFinal_sequences = tokenizer.texts_to_sequences(tokens2)
+    testFinal_sequences = pad_sequences(testFinal_sequences, maxlen=32, padding='post', truncating='post')
     output = model.predict(testFinal_sequences)
     output = output.tolist()
     finalList = []
@@ -122,7 +106,7 @@ if __name__ == "__main__":
         row.append(str(len(finalList)))
         row.append(str((i/total).tolist().index(np.max(i/total))))
         finalList.append(row)
-    with open('myfile.csv', 'w', newline='') as outfile:
+    with open('DragoonPredictions.csv', 'w', newline='') as outfile:
         write = csv.writer(outfile)
         write.writerow(['Id', 'ner_label'])
         write.writerows(finalList)
